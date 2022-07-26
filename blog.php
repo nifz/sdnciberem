@@ -1,0 +1,9 @@
+<?php
+    if(isset($_GET['berita']))
+    {
+        include('blog-single.php');
+    }
+    else
+    {
+        include('blog-all.php');
+    }

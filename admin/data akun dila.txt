@@ -1,0 +1,91 @@
+<?php
+
+require('../include/db.php');
+session_start();
+if(!isset($_SESSION['user']))
+{
+    header('location: login.php');
+}
+$sql = mysqli_query($con, "SELECT * FROM dinamis");
+$arr = array();
+while($data = mysqli_fetch_assoc($sql))
+{
+    $arr[] = $data;
+}
+
+if(isset($_POST['submitedit']))
+{
+    if(!empty($_POST['namepassword_new'])) 
+    {
+        $id = $_SESSION['userid'];
+        $users = mysqli_query($con, "SELECT * FROM users WHERE id = $id");
+        $user = mysqli_fetch_assoc($users);
+        if(md5($_POST['namepassword_old']) == $user['password'])
+        {
+            // ambil data file
+            $namaFile = $_FILES['nameimage']['name'];
+            $namaSementara = $_FILES['nameimage']['tmp_name'];
+        
+            // tentukan lokasi file akan dipindahkan
+            $dirUpload = "images/user/";
+        
+            // pindahkan file
+            $terupload = move_uploaded_file($namaSementara,"../".$dirUpload.$namaFile);
+            if ($terupload) 
+            {
+                $_SESSION['user'] = $_POST['nameemail'];
+                $sql = "UPDATE `users` SET `image`='".$dirUpload.$namaFile."',`name`='".$_POST['namename']."',`email`='".$_POST['nameemail']."',`password`='".md5($_POST['namepassword_new'])."' WHERE id = ".$_SESSION['userid']."";
+                mysqli_query($con,$sql) or die(mysqli_error());
+                header('location: .?url=settings&success=true&message=Data Berhasil Diubah!');
+            } 
+            else 
+            {
+                $_SESSION['user'] = $_POST['nameemail'];
+                $sql = "UPDATE `users` SET `name`='".$_POST['namename']."',`email`='".$_POST['nameemail']."',`password`='".md5($_POST['namepassword_new'])."' WHERE id = ".$_SESSION['userid']."";
+                $sub = mysqli_query($con,$sql);
+                if($sub)
+                {
+                    header('location: .?url=settings&success=true&data=profile&message=Data Berhasil Diubah!');
+                } else {
+                    header('location: .?url=settings&failed=true&data=profile&message=Data Gagal Diubah!');
+                }
+            }
+        }
+        else
+        {
+            header('location: .?url=settings&failed=true&data=profile&message=Password lama salah!');
+        }
+        
+    }
+    else
+    {
+        // ambil data file
+        $namaFile = $_FILES['nameimage']['name'];
+        $namaSementara = $_FILES['nameimage']['tmp_name'];
+    
+        // tentukan lokasi file akan dipindahkan
+        $dirUpload = "images/user/";
+    
+        // pindahkan file
+        $terupload = move_uploaded_file($namaSementara,"../".$dirUpload.$namaFile);
+        if ($terupload) 
+        {
+            $_SESSION['user'] = $_POST['nameemail'];
+            $sql = "UPDATE `users` SET `image`='".$dirUpload.$namaFile."',`name`='".$_POST['namename']."',`email`='".$_POST['nameemail']."' WHERE id = ".$_SESSION['userid']."";
+            mysqli_query($con,$sql) or die(mysqli_error());
+            header('location: .?url=settings&success=true&message=Data Berhasil Diubah!');
+        } 
+        else 
+        {
+            $_SESSION['user'] = $_POST['nameemail'];
+            $sql = "UPDATE `users` SET `name`='".$_POST['namename']."',`email`='".$_POST['nameemail']."' WHERE id = ".$_SESSION['userid']."";
+            $sub = mysqli_query($con,$sql);
+            if($sub)
+            {
+                header('location: .?url=settings&success=true&data=profile&message=Data Berhasil Diubah!');
+            } else {
+                header('location: .?url=settings&failed=true&data=profile&message=Data Gagal Diubah!');
+            }
+        }
+    }
+}
